@@ -1,0 +1,146 @@
+@startuml
+title Bridge Pattern - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+
+' =========================================================
+' RENDERER SIDE
+' =========================================================
+
+package renderer {
+
+    interface Renderer {
+        +renderCircle(radius : double) : void
+        +renderSquare(side : double) : void
+    }
+
+    class VectorRenderer {
+        +renderCircle(radius : double) : void
+        +renderSquare(side : double) : void
+    }
+
+    class RasterRenderer {
+        +renderCircle(radius : double) : void
+        +renderSquare(side : double) : void
+    }
+
+    Renderer <|.. VectorRenderer
+    Renderer <|.. RasterRenderer
+}
+
+
+' =========================================================
+' SHAPE SIDE
+' =========================================================
+
+package shape {
+
+    abstract class Shape {
+        #renderer : Renderer
+
+        +Shape(renderer : Renderer)
+        {abstract} +draw() : void
+    }
+
+    class Circle {
+        -radius : double
+
+        +Circle(renderer : Renderer, radius : double)
+        +draw() : void
+    }
+
+    class Square {
+        -side : double
+
+        +Square(renderer : Renderer, side : double)
+        +draw() : void
+    }
+
+    Shape <|-- Circle
+    Shape <|-- Square
+}
+
+
+' =========================================================
+' BRIDGE RELATIONSHIP
+' =========================================================
+
+Shape o-- Renderer : bridge
+
+Circle ..> Renderer : uses
+Square ..> Renderer : uses
+
+
+' =========================================================
+' MAIN
+' =========================================================
+
+class Main {
+    +main(args : String[]) : void
+
+    --
+    Local variables:
+    --
+    renderer : Renderer
+    vectorRenderer : VectorRenderer
+    rasterRenderer : RasterRenderer
+    circle : Shape
+    square : Shape
+}
+
+Main ..> Renderer : creates/uses
+Main ..> VectorRenderer : creates
+Main ..> RasterRenderer : creates
+Main ..> Circle : creates
+Main ..> Square : creates
+
+
+' =========================================================
+' MAIN EXECUTION FLOW
+' =========================================================
+
+note right of Main
+    Program execution:
+
+    1. vectorRenderer = new VectorRenderer()
+    2. rasterRenderer = new RasterRenderer()
+
+    3. circle = new Circle(vectorRenderer, 10)
+       circle.draw()
+
+    4. circle = new Circle(rasterRenderer, 10)
+       circle.draw()
+
+    5. square = new Square(vectorRenderer, 5)
+       square.draw()
+
+    6. square = new Square(rasterRenderer, 5)
+       square.draw()
+end note
+
+
+' =========================================================
+' EXPLANATION OF BRIDGE
+' =========================================================
+
+note bottom of Shape
+    Shape is the Abstraction.
+
+    Renderer is the Implementor.
+
+    Shape contains a Renderer reference.
+    This reference is the Bridge between
+    abstraction and implementation.
+
+    Circle and Square extend Shape.
+
+    VectorRenderer and RasterRenderer
+    implement Renderer.
+
+    Therefore shapes and rendering methods
+    can vary independently.
+end note
+
+@enduml
